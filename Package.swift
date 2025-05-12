@@ -247,7 +247,7 @@ private func patchSwiftSyntaxDependency(in package: Package) {
         guard case .sourceControl(_, let location, _) = dependency.kind else {
             return false
         }
-        
+
         return location.contains("apple/swift-syntax.git") || location.contains("swiftlang/swift-syntax.git")
     }) {
         package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(

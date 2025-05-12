@@ -23,17 +23,17 @@ extension TypeMetadata {
         case heapGenericLocalVariable = 0x500 // 0 | nonType | runtimePrivate
         case errorObject = 0x501  // 1 | nonType | runtimePrivate
         case unknown = 0xffff
-        
+
         init(_ type: Any.Type) {
             let v = _swift_getMetadataKind(type)
-            
+
             if let result = Self(rawValue: v) {
                 self = result
             } else {
                 self = .unknown
             }
         }
-        
+
         public init?(_rawValue rawValue: Int) {
             switch rawValue {
                 case 1:
@@ -109,6 +109,7 @@ extension TypeMetadata {
 
 // MARK: - Helpers
 
+
 @_spi(Internal)
 extension TypeMetadata {
     public var _contextDescriptorFlags: SwiftRuntimeContextDescriptorFlags {
@@ -120,7 +121,8 @@ extension TypeMetadata {
     public var _kind: TypeMetadata.Kind? {
         TypeMetadata.Kind(base)
     }
-    
+
+    /// The kind of the type.
     public var kind: TypeMetadata.Kind {
         if let _kind = _contextDescriptorFlags.kind {
             switch _kind {
@@ -142,13 +144,13 @@ extension TypeMetadata {
                     break
             }
         }
-        
+
         guard let kind = _kind else {
             if _swift_isClassType(base) {
                 return .class
             } else {
                 let _baseMetatype = Swift.type(of: base)
-                
+
                 if TypeMetadata(_baseMetatype)._kind == .existentialMetatype {
                     return .existential
                 } else if TypeMetadata(_baseMetatype)._kind == .metatype {
@@ -160,18 +162,20 @@ extension TypeMetadata {
                         }
                     }
                 }
-                
+
                 assertionFailure()
-                
+
                 return .class
             }
         }
-        
+
         return kind
     }
 }
 
 extension TypeMetadata {
+    /// Returns the type metadata as a specific type.
+    /// 根据 类型的 kind 属性将其转换为相应的类型元数据结构。
     public var typed: Any {
         switch kind {
             case .`struct`:
@@ -192,7 +196,7 @@ extension TypeMetadata {
                 return self
         }
     }
-    
+
     public var _nominalType: (any _NominalTypeMetadataType)? {
         try? cast(self.typed)
     }
