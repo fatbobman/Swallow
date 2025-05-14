@@ -4,12 +4,25 @@
 
 import Swift
 
-@dynamicMemberLookup
+/*
+struct UserView {
+    @Inout var user: User
+
+    init(userStore: UserStore, userID: ID) {
+        _user = Inout(
+            get: { userStore.getUser(id: userID) },
+            set: { userStore.updateUser(id: userID, with: $0) }
+        )
+    }
+}
+*/
+
+/// 类似 Binding 的属性包装器，不依赖 SwiftUI, 不会引发视图更新。
 @propertyWrapper
 public struct Inout<Value>: PropertyWrapper {
     public let get: @Sendable () -> Value
     public let set: @Sendable (Value) -> Void
-    
+
     public var wrappedValue: Value {
         get {
             return get()
@@ -17,11 +30,11 @@ public struct Inout<Value>: PropertyWrapper {
             set(newValue)
         }
     }
-    
+
     public var projectedValue: Self {
         self
     }
-        
+
     public init(
         get: @escaping @Sendable () -> Value,
         set: @escaping @Sendable (Value) -> Void
@@ -29,14 +42,14 @@ public struct Inout<Value>: PropertyWrapper {
         self.get = get
         self.set = set
     }
-    
+
     public init(
         _ get: @autoclosure @escaping @Sendable () -> Value,
         _ set: @escaping @Sendable (Value) -> Void
     ) {
         self.init(get: get, set: set)
     }
-        
+
     public subscript<Subject>(
         dynamicMember keyPath: WritableKeyPath<Value, Subject>
     ) -> Inout<Subject> {
@@ -62,7 +75,7 @@ extension Inout: CustomStringConvertible {
 }
 
 extension Inout: Sendable where Value: Sendable {
-    
+
 }
 
 // MARK: - SwiftUI Additions
