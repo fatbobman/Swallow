@@ -7,7 +7,7 @@ import Swift
 /// A protocol formalizing a `@propertyWrapper`.
 public protocol PropertyWrapper<WrappedValue> {
     associatedtype WrappedValue
-    
+
     var wrappedValue: WrappedValue { get }
 }
 
@@ -25,7 +25,7 @@ extension PropertyWrapper {
     public static var _opaque_WrappedValue: Any.Type {
         WrappedValue.self
     }
-    
+
     public var _opaque_PropertyWrapper_wrappedValue: Any {
         wrappedValue
     }
@@ -79,7 +79,7 @@ extension ParameterlessPropertyWrapper where WrappedValue: Hashable, Self: Hasha
 
 public struct AnyMutablePropertyWrapper<Value>: MutablePropertyWrapper {
     private var base: any MutablePropertyWrapper
-    
+
     public var wrappedValue: Value {
         get {
             base.wrappedValue as! Value
@@ -87,13 +87,13 @@ public struct AnyMutablePropertyWrapper<Value>: MutablePropertyWrapper {
             try! base._opaque_setWrappedValue(newValue)
         }
     }
-    
+
     public init<Wrapper: MutablePropertyWrapper>(
         _ wrapper: Wrapper
     ) where Wrapper.WrappedValue == Value {
         self.base = wrapper
     }
-    
+
     public init<Wrapper: PropertyWrapper>(
         unsafelyAdapting wrapper: Wrapper
     ) where Wrapper.WrappedValue == Value {
@@ -120,10 +120,10 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
         let get: (MutableValueBox) -> WrappedValue
         let set: (inout MutableValueBox, WrappedValue) -> ()
     }
-    
+
     private let binding: Binding
     public var _opaque_wrappedValue: Any
-    
+
     public var wrappedValue: WrappedValue {
         get {
             binding.get(self)
@@ -131,12 +131,12 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
             binding.set(&self, newValue)
         }
     }
-    
+
     public init(
         wrappedValue: WrappedValue
     ) {
         _opaque_wrappedValue = wrappedValue
-        
+
         binding = .init(
             get: { _self in
                 _self._opaque_wrappedValue as! WrappedValue
@@ -146,12 +146,12 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
             }
         )
     }
-    
+
     public init<Wrapper: MutablePropertyWrapper>(
         _ wrapper: Wrapper
     ) where Wrapper.WrappedValue == WrappedValue {
         _opaque_wrappedValue = wrapper
-        
+
         if isAnyObject(wrapper) {
             binding = .init(
                 get: { _ in
@@ -159,7 +159,7 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
                 },
                 set: { _, newValue in
                     var wrapper = wrapper
-                    
+
                     wrapper.wrappedValue = newValue
                 }
             )
@@ -171,9 +171,9 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
                 set: { _self, newValue in
                     do {
                         var mutableWrapper = try cast(_self._opaque_wrappedValue, to: Wrapper.self)
-                        
+
                         mutableWrapper.wrappedValue = newValue
-                        
+
                         _self._opaque_wrappedValue = mutableWrapper
                     } catch {
                         assertionFailure(error)
@@ -182,23 +182,23 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
             )
         }
     }
-    
+
     public init<T>(
         initial: T,
         get: @escaping (T) -> WrappedValue,
         set: @escaping (inout T, WrappedValue) -> ()
     )  {
         _opaque_wrappedValue = initial
-        
+
         binding = .init(
             get: { _self in
                 get(_self._opaque_wrappedValue as! T)
             },
             set: { _self, newValue in
                 var initial = _self._opaque_wrappedValue as! T
-                
+
                 set(&initial, newValue)
-                
+
                 _self._opaque_wrappedValue = initial
             }
         )
@@ -221,10 +221,10 @@ extension MutableValueBox: Hashable where WrappedValue: Hashable {
 
 public final class _IndirectMutablePropertyWrapper<P: MutablePropertyWrapper>: MutablePropertyWrapper {
     public typealias WrappedValue = P.WrappedValue
-    
+
     private var initialValue: P.WrappedValue?
     private var base: P?
-    
+
     public var wrappedValue: P.WrappedValue {
         get {
             base?.wrappedValue ?? initialValue!
@@ -236,16 +236,16 @@ public final class _IndirectMutablePropertyWrapper<P: MutablePropertyWrapper>: M
             }
         }
     }
-    
+
     public func setBase(_ base: P) {
         self.initialValue = nil
         self.base = base
     }
-    
+
     public init(initialValue: P.WrappedValue) {
         self.initialValue = initialValue
     }
-    
+
     public init(base: P) {
         self.base = base
     }
@@ -253,9 +253,9 @@ public final class _IndirectMutablePropertyWrapper<P: MutablePropertyWrapper>: M
 
 public struct _PropertyWrapperMutabilityAdaptor<Wrapper: PropertyWrapper>: MutablePropertyWrapper {
     public typealias WrappedValue = Wrapper.WrappedValue
-    
+
     private var base: Either<Wrapper, WrappedValue>
-    
+
     public var wrappedValue: WrappedValue {
         get {
             base.reduce({ $0.wrappedValue }, { $0 })
@@ -263,7 +263,7 @@ public struct _PropertyWrapperMutabilityAdaptor<Wrapper: PropertyWrapper>: Mutab
             base = .right(newValue)
         }
     }
-    
+
     public init(_ wrapper: Wrapper) {
         self.base = .left(wrapper)
     }
@@ -273,19 +273,19 @@ public struct _PropertyWrapperMutabilityAdaptor<Wrapper: PropertyWrapper>: Mutab
 import SwiftUI
 
 extension Binding: MutablePropertyWrapper {
-    
+
 }
 
 extension ObservedObject: PropertyWrapper {
-    
+
 }
 
 extension State: PropertyWrapper {
-    
+
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension StateObject: PropertyWrapper {
-    
+
 }
 #endif

@@ -5,6 +5,8 @@
 import Swallow
 
 extension TypeMetadata {
+    /// A structure that represents the kind of a Swift type.
+    /// The kind of a Swift type can be a class, struct, enum, optional, foreign class, opaque type, tuple, function,
     @frozen
     public enum Kind: UInt, Equatable {
         case `class` = 0
@@ -112,6 +114,8 @@ extension TypeMetadata {
 
 @_spi(Internal)
 extension TypeMetadata {
+    /// 一个表示 Swift 运行时类型上下文描述符标志的结构体，包含有关类型的重要信息
+    /// 例如：类型的种类（类、结构体、枚举等）；泛型参数信息；访问控制级别；内存布局特性；其他运行时相关的标志
     public var _contextDescriptorFlags: SwiftRuntimeContextDescriptorFlags {
         unsafeBitCast(self, to: UnsafePointer<SwiftRuntimeContextDescriptorFlags>.self).pointee
     }

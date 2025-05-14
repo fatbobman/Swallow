@@ -25,6 +25,11 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
         self.typeMetadata = typeMetadata
     }
 
+    /// 这是整个反射系统的核心部分，解决了从任意类型获取正确类型元数据的复杂问题。
+    /// 接收任意类型的值 (Any)
+    /// 尝试获取该值的正确类型元数据
+    /// 特殊处理可选类型值
+    /// 构建适当的 InstanceMirror 实例
     @usableFromInline
     internal init?(
         _typeErasedSubject subject: Any
